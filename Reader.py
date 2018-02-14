@@ -1,10 +1,14 @@
+# method to read and save attributes and classes (and data) from an ARFF file
 def read_file(filename):
     attributes = list()
     classes = None
     data = None
     file = open(filename, "r")
     lines = file.readlines()
+    # loop all the lines of the ARFF file to find lines containing attributes
+    # and data
     for i in range(0, len(lines) - 1):
+        # remove '\n' from end of string
         line = lines[i].rstrip('\n')
         if len(line) == 0:
             continue
@@ -22,7 +26,7 @@ def read_file(filename):
             data = read_data(lines[i+1:len(lines)-1], len(attributes) + 1)
     return attributes, classes, data
 
-
+# method to save data found after '@DATA' tag in ARFF file
 def read_data(lines, x_limit):
     data = [[0 for i in range(x_limit)] for j in range(len(lines) - 1)]
     for i in range(0, len(lines) - 1):
