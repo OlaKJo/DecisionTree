@@ -4,4 +4,5 @@ attributes, classes, data = Reader.read_file("testfile")
 
 print (attributes)
 print (classes)
-print (data)
+for line in data:
+    print (line)
