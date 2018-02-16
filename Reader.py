@@ -30,6 +30,6 @@ def read_file(filename):
 def read_data(lines, x_limit):
     data = [[0 for i in range(x_limit)] for j in range(len(lines) - 1)]
     for i in range(0, len(lines) - 1):
-        line = lines[i].rstrip('\n')
+        line = "x" + str(i+1) + "," + lines[i].rstrip('\n')
         data[i] = line.split(",")
     return data
