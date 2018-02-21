@@ -4,9 +4,9 @@ from random import randint
 from TreeNode import TreeNode
 
 def main():
-    attributes, classes, data = Reader.read_file("testfile")
+    attributes, classes, data = Reader.read_file("Restaurant")
 
-    node = TreeNode("Patrons", 32);
+    #node = TreeNode("Patrons", 32);
     # node.printNode()
 
     print (attributes)
@@ -17,6 +17,8 @@ def main():
     # result_tree = DTL(data, attributes, data)
     # print(plurality_value(data))
 
+
+    #print(check_if_all_same(data))
     #get_next_attribute(attributes, data)
     root = DTL(data, attributes, data)
     root.print_tree(0)
@@ -25,17 +27,18 @@ def main():
 def DTL(examples, attributes, parent_examples):
     if len(examples) == 0:
         return plurality_value(parent_examples)
-    elif check_if_all_same(parent_examples):
-        return get_class(parent_examples(0))
+    elif check_if_all_same(examples):
+        return get_class(examples[0])
     elif all(x is None for x in attributes):
         return plurality_value(examples)
     else:
         next_attribute = get_next_attribute(attributes, examples)
         node = TreeNode(next_attribute, list())
         v_values = set(column(examples, attributes.index(next_attribute) + 1))
+        next_attribute_index = attributes.index(next_attribute)
+        attributes[attributes.index(next_attribute)] = None
         for i in v_values:
-            child_examples = [x for x in examples if x[attributes.index(next_attribute)] == i]
-            attributes[attributes.index(next_attribute)] = None
+            child_examples = [x for x in examples if x[next_attribute_index + 1] == i]
             subtree = DTL(child_examples, attributes, examples)
             node.add_child(subtree, int(i))
         return node
@@ -57,9 +60,11 @@ def plurality_value(examples):
     return maxGoals[r]
 
 def get_next_attribute(attributes, examples):
-    current_champion = 1
+    current_champion = 0
+    while attributes[current_champion] == None:
+        current_champion += 1
     current_gain = gain(current_champion, examples)
-    for challenger in list(range(2,len(attributes)-1)):
+    for challenger in list(range(current_champion + 1,len(attributes))):
         if attributes[challenger] == None:
             break
         challenger_gain = gain(challenger, examples)
@@ -82,9 +87,9 @@ def B(q):
     return -(q*math.log(q,2) + (1 - q)*math.log((1-q),2))
 
 def remainder(i, examples):
-    col = column(examples, i)
+    col = column(examples, i+1)
     exsset = set(col)
-    branches = [[row for row in examples if row[i]==val] for val in exsset]
+    branches = [[row for row in examples if row[i+1]==val] for val in exsset]
     rem_sum = 0
     for branch in branches:
         nbrpos = len([x for x in branch if x[len(x)-1]=='1'])
@@ -93,11 +98,12 @@ def remainder(i, examples):
 
 
 def check_if_all_same(examples):
-
-    return False
+    goals = column(examples, len(examples[0])-1)
+    exsset = set(goals)
+    return False if len(exsset) > 1 else True
 
 def get_class(example):
-    return example(len(example) - 1)
+    return example[len(example) - 1]
 
 def column(matrix, i):
     return [row[i] for row in matrix]
