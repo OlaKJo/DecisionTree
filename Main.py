@@ -20,11 +20,13 @@ def main():
 
     #print(check_if_all_same(data))
     #get_next_attribute(attributes, data)
-    root = DTL(data, attributes, data)
+    root = DTL(data, attributes, data, data)
     root.print_tree(0)
 
 
-def DTL(examples, attributes, parent_examples):
+def DTL(examples, attributes, parent_examples, orig_examples):
+    #orig_examples is used to be able to loop all v_values, even if some of the possible
+    #v_values are no longer present in examples at a given level of the tree
     if len(examples) == 0:
         return plurality_value(parent_examples)
     elif check_if_all_same(examples):
@@ -34,12 +36,12 @@ def DTL(examples, attributes, parent_examples):
     else:
         next_attribute = get_next_attribute(attributes, examples)
         node = TreeNode(next_attribute, list())
-        v_values = set(column(examples, attributes.index(next_attribute) + 1))
+        v_values = set(column(orig_examples, attributes.index(next_attribute) + 1))
         next_attribute_index = attributes.index(next_attribute)
         attributes[attributes.index(next_attribute)] = None
         for i in v_values:
             child_examples = [x for x in examples if x[next_attribute_index + 1] == i]
-            subtree = DTL(child_examples, attributes, examples)
+            subtree = DTL(child_examples, attributes, examples, orig_examples)
             node.add_child(subtree, int(i))
         return node
 
@@ -66,7 +68,7 @@ def get_next_attribute(attributes, examples):
     current_gain = gain(current_champion, examples)
     for challenger in list(range(current_champion + 1,len(attributes))):
         if attributes[challenger] == None:
-            break
+            continue
         challenger_gain = gain(challenger, examples)
         if challenger_gain > current_gain:
             current_champion = challenger
