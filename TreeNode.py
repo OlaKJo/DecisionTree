@@ -1,12 +1,10 @@
 class TreeNode:
     def __init__(self,att,children=None,examples=None,parent=None,):
-        self.attribute = val
-        self.leftChild = left
-        self.rightChild = right
+        self.attribute = att
         self.parent = parent
         self.children = children
 
-    def add_child(node, list_index):
+    def add_child(self, node, list_index):
         self.children.insert(node, list_index)
 
     def is_root(self):
@@ -25,8 +23,26 @@ class TreeNode:
     def has_any_children(self):
         return self.rightChild or self.leftChild
 
-    def print_node(self):
-        print(self.att)
+    def print_node(self, indent, i):
+        printstr = ""
+        for s in range(0,indent):
+            printstr += "   "
+        print(printstr,self.att, " = ", i)
+
+    def print_tree(self, level):
+        for child in range(0,len(self.children)):
+            if type(self.children[child]) is int:
+                print_leaf(level, self.children[child])
+            else:
+                print_node(level, child)
+                print_tree(self.children[child], level+1)
+
+    def print_leaf(self, level, val):
+        printstr = ""
+        for s in range(0,indent):
+            printstr += "   "
+        print(printstr,self.att, " = ", i, ": ", val)
+
 
     def replace_node_data(self,key,value,lc,rc):
         self.payload = value

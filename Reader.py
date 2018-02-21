@@ -23,13 +23,13 @@ def read_file(filename):
                 continue
             attributes.append(words[1].lower())
         elif words[0].lower() == "@data":
-            data = read_data(lines[i+1:len(lines)-1], len(attributes) + 1)
+            data = read_data(lines[i+1:len(lines)], len(attributes) + 1)
     return attributes, classes, data
 
 # method to save data found after '@DATA' tag in ARFF file
 def read_data(lines, x_limit):
-    data = [[0 for i in range(x_limit)] for j in range(len(lines) - 1)]
-    for i in range(0, len(lines) - 1):
+    data = [[0 for i in range(0,x_limit)] for j in range(0,len(lines))]
+    for i in range(0, len(lines)):
         line = "x" + str(i+1) + "," + lines[i].rstrip('\n')
         data[i] = line.split(",")
     return data

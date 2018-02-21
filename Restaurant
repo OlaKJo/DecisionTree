@@ -39,7 +39,7 @@
 @ATTRIBUTE Reservation  NUMERIC
 @ATTRIBUTE Type         NUMERIC
 @ATTRIBUTE WaitEstimate NUMERIC
-@ATTRIBUTE class        {0,1,}
+@ATTRIBUTE class        {0,1}
 
 @DATA
 5.1,3.5,1.4,0.2,Iris-setosa
