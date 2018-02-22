@@ -3,6 +3,9 @@ import math
 from random import randint
 from TreeNode import TreeNode
 import numpy
+from scipy.stats import chi2
+
+P_VALUE = 0.95
 
 CHI2_95 =   [3.84145882069413, 5.99146454710798,    7.81472790325118,
             9.48772903678115,	11.0704976935164,	12.5915872437440,
@@ -13,6 +16,26 @@ CHI2_95 =   [3.84145882069413, 5.99146454710798,    7.81472790325118,
             30.1435272056462,	31.4104328442309,	32.6705733409173,
             33.9244384714438,	35.1724616269081,	36.4150285018073,
             37.6524841334828]
+
+CHI2_75 = [1.32330369693147,	2.77258872223978,	4.10834493563232,
+	        5.38526905777939,	6.62567976382925,	7.84080412058512,
+	        9.03714754790814,	10.2188549702468,	11.3887514404704,
+            12.5488613968894,	13.7006927460115,	14.8454036710402,
+        	15.9839062163121,	17.1169335960001,	18.2450856024151,
+        	19.3688602205845,	20.4886762383915,	21.6048897957282,
+        	22.7178067441999,	23.8276920430309,	24.9347770149023,
+        	26.0392650281650,	27.1413360029765,	28.2411500255288,
+        	29.3388502768664]
+
+CHI2_55 = [0.570651862051189,	1.59701539243554,	2.64300526481826,
+            3.68713383408389,	4.72775658648385,	5.76519934076783,
+    	    6.79997020902763,	7.83250903996952,	8.86316579421816,
+        	9.89221572579308,	10.9198769188551,	11.9463243526964,
+            12.9717003427097,	13.9961221641787,	15.0196876364233,
+            16.0424792553086,	17.0645672908903,	18.0860121405924,
+            19.1068661403726,	20.1271749761579,	21.1469787966556,
+            22.1663131002802,	23.1852094491809,	24.2036960494501,
+            25.2217982266710]
 
 def main():
     attributes, classes, data = Reader.read_file("Restaurant")
@@ -70,13 +93,11 @@ def prune(curr_node, node_parent, data):
         if type(child) is TreeNode:
             prune(child, curr_node, data)
     for child in children:
-        if parent.attribute == "type":
-            print("hello there")
         if type(child) is TreeNode:
             leaf = False
             break
     if leaf:
-        if no_info_gain(curr_node, data):
+        if significant(curr_node, data) == False:
             ind = node_parent.children.index(curr_node)
             node_parent.children.remove(curr_node)
             node_parent.children.insert(ind, plurality_value(get_node_examples(curr_node,data)))
@@ -96,9 +117,7 @@ def get_node_examples(node, examples):
         sub_examples[i] = sub_examples_list[i]
     return sub_examples
 
-
-
-def no_info_gain(node, data):
+def significant(node, data):
     pk = list()
     nk = list()
     for k in range(0, len(node.child_examples)):
@@ -129,8 +148,10 @@ def no_info_gain(node, data):
         nk_hat.insert(k, n*(pk[k]+nk[k])/(p+n))
         Delta += pow(pk[k] - pk_hat[k],2)/pk_hat[k] + pow(nk[k] - nk_hat[k],2)/nk_hat[k]
     v = len(pk) - 1 - v_minus
-    chi2 = CHI2_95[v + 1]
-    return Delta < chi2
+    #chi2_tab = CHI2_95[v - 1]
+    chi2_sci = chi2.ppf(P_VALUE, v)
+    print("Delta value for node ", node.attribute, " is: ", Delta, ", chi2 value is: ", chi2_sci)
+    return Delta >= chi2_sci
 
 
 def plurality_value(examples):
