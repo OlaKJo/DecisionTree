@@ -19,7 +19,7 @@ def read_file(file_name):
             continue
         if words[0].lower() == "@attribute":
             if words[1].lower() == "class":
-                classes = (words[2][1:(len(words[2]) - 1)]).split(",")
+                classes = (words[len(words) - 1][1:(len(words[2]) - 1)]).split(",")
                 continue
             attributes.append(words[1].lower())
         elif words[0].lower() == "@data":
