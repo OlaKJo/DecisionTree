@@ -1,9 +1,9 @@
 # method to read and save attributes and classes (and data) from an ARFF file
-def read_file(filename):
+def read_file(file_name):
     attributes = list()
     classes = None
     data = None
-    file = open(filename, "r")
+    file = open(file_name, "r")
     lines = file.readlines()
     # loop all the lines of the ARFF file to find lines containing attributes
     # and data

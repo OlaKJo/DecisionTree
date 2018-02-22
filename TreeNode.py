@@ -1,36 +1,26 @@
 class TreeNode:
-    def __init__(self,att,children=None,examples=None,parent=None,):
+    def __init__(self,att,children=None,child_examples=None):
         self.attribute = att
-        self.parent = parent
         self.children = children
+        self.child_examples = child_examples
 
     def add_child(self, node, list_index):
         self.children.insert(list_index, node)
         return 0
 
-    def is_root(self):
-        return not self.parent
-
-    def is_leaf(self):
-        return not (self.rightChild or self.leftChild)
-
-    # Set examples for this node
-    def set_examples(self, examples):
-        self.examples = examples
-
-    def get_examples(self):
-        return self.examples
-
-    def has_any_children(self):
-        return self.rightChild or self.leftChild
+    # add examples for a child to this node
+    def add_examples(self, examples, i):
+        self.child_examples.insert(i, examples)
 
     def print_node(self, indent, i):
         printstr = ""
         for s in range(0,indent):
             printstr += "   "
-        print(printstr,self.attribute, " = ", i)
+        print(printstr,self.attribute, " = ", i, self.child_examples[i])
 
-    def print_tree(self, level):
+    def print_tree(self, level = None):
+        if level is None:
+            level = 0
         for child in range(0,len(self.children)):
             if type(self.children[child]) is str:
                 self.print_leaf(level, child, self.children[child])
@@ -42,14 +32,4 @@ class TreeNode:
         printstr = ""
         for s in range(0,level):
             printstr += "   "
-        print(printstr,self.attribute, " = ", i, ": ", val)
-
-
-    def replace_node_data(self,key,value,lc,rc):
-        self.payload = value
-        self.leftChild = lc
-        self.rightChild = rc
-        if self.hasLeftChild():
-            self.leftChild.parent = self
-        if self.hasRightChild():
-            self.rightChild.parent = self
+        print(printstr,self.attribute, " = ", i, ": ", val, self.child_examples[i])
