@@ -15,7 +15,7 @@ CHI2_95 =   [3.84145882069413, 5.99146454710798,    7.81472790325118,
             37.6524841334828]
 
 def main():
-    attributes, classes, data = Reader.read_file("Restaurant")
+    attributes, classes, data, att_dict = Reader.read_file("Restaurant2")
 
     #node = TreeNode("Patrons", 32);
     # node.printNode()
@@ -31,15 +31,15 @@ def main():
 
     #print(check_if_all_same(data))
     #get_next_attribute(attributes, data)
-    root = DTL(data, attributes, data, data)
+    root = DTL(data, attributes, data, data, att_dict, classes)
     print("decision tree: ")
     root.print_tree()
     print("pruned tree: ")
-    prune(root, root, data)
+    prune(root, root, data, classes)
     root.print_tree()
 
 
-def DTL(examples, attributes, parent_examples, orig_examples):
+def DTL(examples, attributes, parent_examples, orig_examples, att_dict, classes):
     #orig_examples is used to be able to loop all v_values, even if some of the possible
     #v_values are no longer present in examples at a given level of the tree
     if len(examples) == 0:
@@ -49,34 +49,31 @@ def DTL(examples, attributes, parent_examples, orig_examples):
     elif all(x is None for x in attributes):
         return plurality_value(examples)
     else:
-        next_attribute = get_next_attribute(attributes, examples)
-        node = TreeNode(next_attribute, list(), list())
+        next_attribute = get_next_attribute(attributes, examples, classes)
+        node = TreeNode(next_attribute, att_dict, classes, list(), list())
         v_values = set(column(orig_examples, attributes.index(next_attribute) + 1))
         next_attribute_index = attributes.index(next_attribute)
         attributes[attributes.index(next_attribute)] = None
         for i in v_values:
             child_examples = [x for x in examples if x[next_attribute_index + 1] == i]
             node.add_examples(column(child_examples,0), int(i))
-            subtree = DTL(child_examples, attributes, examples, orig_examples)
+            subtree = DTL(child_examples, attributes, examples, orig_examples, att_dict, classes)
             node.add_child(subtree, int(i))
-        #return prune(node, node)
         return node
 
-def prune(curr_node, node_parent, data):
+def prune(curr_node, node_parent, data, classes):
     leaf = True
     parent = curr_node
     children = curr_node.children
     for child in children:
         if type(child) is TreeNode:
-            prune(child, curr_node, data)
+            prune(child, curr_node, data, classes)
     for child in children:
-        if parent.attribute == "type":
-            print("hello there")
         if type(child) is TreeNode:
             leaf = False
             break
     if leaf:
-        if no_info_gain(curr_node, data):
+        if no_info_gain(curr_node, data, classes):
             ind = node_parent.children.index(curr_node)
             node_parent.children.remove(curr_node)
             node_parent.children.insert(ind, plurality_value(get_node_examples(curr_node,data)))
@@ -98,7 +95,7 @@ def get_node_examples(node, examples):
 
 
 
-def no_info_gain(node, data):
+def no_info_gain(node, data, classes):
     pk = list()
     nk = list()
     for k in range(0, len(node.child_examples)):
@@ -108,7 +105,7 @@ def no_info_gain(node, data):
             for row in data:
                 if row[0] == x:
                     curr_class = row[len(row)-1]
-                    if curr_class == '1':
+                    if curr_class == classes.index('yes'):
                         pk[k] += 1
                     else:
                         nk[k] += 1
@@ -147,25 +144,25 @@ def plurality_value(examples):
     r = 0 if len(maxGoals) == 1 else randint(0, len(maxGoals) - 1)
     return maxGoals[r]
 
-def get_next_attribute(attributes, examples):
+def get_next_attribute(attributes, examples, classes):
     current_champion = 0
     while attributes[current_champion] == None:
         current_champion += 1
-    current_gain = gain(current_champion, examples)
+    current_gain = gain(current_champion, examples, classes)
     for challenger in list(range(current_champion + 1,len(attributes))):
         if attributes[challenger] == None:
             continue
-        challenger_gain = gain(challenger, examples)
+        challenger_gain = gain(challenger, examples, classes)
         if challenger_gain > current_gain:
             current_champion = challenger
             current_gain = challenger_gain
 
     return attributes[current_champion]
 
-def gain(i, examples):
-    nbrpos = len([x for x in examples if x[len(x)-1]=='1'])
+def gain(i, examples, classes):
+    nbrpos = len([x for x in examples if x[len(x)-1]==classes.index('yes')])
     q = nbrpos/len(examples)
-    gain = B(q) - remainder(i, examples)
+    gain = B(q) - remainder(i, examples, classes)
     print(i,gain)
     return gain
 
@@ -174,13 +171,13 @@ def B(q):
         return -math.log(1,2)
     return -(q*math.log(q,2) + (1 - q)*math.log((1-q),2))
 
-def remainder(i, examples):
+def remainder(i, examples, classes):
     col = column(examples, i+1)
     exsset = set(col)
     branches = [[row for row in examples if row[i+1]==val] for val in exsset]
     rem_sum = 0
     for branch in branches:
-        nbrpos = len([x for x in branch if x[len(x)-1]=='1'])
+        nbrpos = len([x for x in branch if x[len(x)-1]==classes.index('yes')])
         rem_sum += len(branch)*B( nbrpos/len(branch) )
     return rem_sum/len(examples)
 

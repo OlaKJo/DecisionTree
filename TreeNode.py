@@ -1,8 +1,10 @@
 class TreeNode:
-    def __init__(self,att,children=None,child_examples=None):
+    def __init__(self,att,att_dict,classes,children=None,child_examples=None):
         self.attribute = att
         self.children = children
         self.child_examples = child_examples
+        self.att_dict = att_dict
+        self.classes = classes
 
     def add_child(self, node, list_index):
         self.children.insert(list_index, node)
@@ -16,13 +18,13 @@ class TreeNode:
         printstr = ""
         for s in range(0,indent):
             printstr += "   "
-        print(printstr,self.attribute, " = ", i, self.child_examples[i])
+        print(printstr,self.attribute, " = ", self.att_dict.get(self.attribute)[i], self.child_examples[i])
 
     def print_tree(self, level = None):
         if level is None:
             level = 0
         for child in range(0,len(self.children)):
-            if type(self.children[child]) is str:
+            if type(self.children[child]) is int:
                 self.print_leaf(level, child, self.children[child])
             else:
                 self.print_node(level, child)
@@ -32,4 +34,4 @@ class TreeNode:
         printstr = ""
         for s in range(0,level):
             printstr += "   "
-        print(printstr,self.attribute, " = ", i, ": ", val, self.child_examples[i])
+        print(printstr,self.attribute, " = ", self.att_dict.get(self.attribute)[i], ": ", self.classes[val].upper(), self.child_examples[i])
