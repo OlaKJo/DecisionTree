@@ -21,7 +21,7 @@ def read_file(file_name):
             continue
         if words[0].lower() == "@attribute":
             if words[1].lower() == "class":
-                classes = (words[2][1:(len(words[2]) - 1)]).split(",")
+                classes = (words[len(words) - 1][1:(len(words[2]) - 1)]).split(",")
                 continue
             curr_attribute = words[1].lower()
             alternatives = (words[2][1:(len(words[2]) - 1)]).split(",")

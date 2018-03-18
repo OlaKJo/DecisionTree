@@ -2,7 +2,10 @@ import Reader
 import math
 from random import randint
 from TreeNode import TreeNode
-import numpy
+from scipy.stats import chi2
+
+P_VALUE = 0.05
+CHI2_PARAM = 1 - P_VALUE
 
 CHI2_95 =   [3.84145882069413, 5.99146454710798,    7.81472790325118,
             9.48772903678115,	11.0704976935164,	12.5915872437440,
@@ -14,23 +17,23 @@ CHI2_95 =   [3.84145882069413, 5.99146454710798,    7.81472790325118,
             33.9244384714438,	35.1724616269081,	36.4150285018073,
             37.6524841334828]
 
+
+
 def main():
     attributes, classes, data, att_dict = Reader.read_file("Restaurant2")
+    """Main method of Decision Tree Project.
+    Calls the operational functions to create a Decision Tree and a pruned tree
+    """
 
-    #node = TreeNode("Patrons", 32);
-    # node.printNode()
-
+    print("The attributes are:")
     print (attributes)
+    print("The classes are:")
     print (classes)
+    print("The example data used is: ")
     for line in data:
         print (line)
 
-    # result_tree = DTL(data, attributes, data)
-    # print(plurality_value(data))
 
-
-    #print(check_if_all_same(data))
-    #get_next_attribute(attributes, data)
     root = DTL(data, attributes, data, data, att_dict, classes)
     print("decision tree: ")
     root.print_tree()
@@ -40,6 +43,14 @@ def main():
 
 
 def DTL(examples, attributes, parent_examples, orig_examples, att_dict, classes):
+    """Holds the main algorithm componentes for creatin a Decision tree.
+    Recursive function with base cases for:
+    - no more examples available
+    - all remaining examples have the same class
+    - no more attributes available
+    Recursive step calls get_next_attribute() to decide which node to add next
+    """
+
     #orig_examples is used to be able to loop all v_values, even if some of the possible
     #v_values are no longer present in examples at a given level of the tree
     if len(examples) == 0:
@@ -62,6 +73,13 @@ def DTL(examples, attributes, parent_examples, orig_examples, att_dict, classes)
         return node
 
 def prune(curr_node, node_parent, data, classes):
+    """
+    Clears an already created decision tree from nodes and paths which do not
+    contribute statistically to the decision being made. Takes as its initial
+    parameters the root of the tree, the root of the tree, and the entire data set.
+    The method is then called recursively on any child nodes until leaves are found.
+    Leaves are pruned if not found useful enough.
+    """
     leaf = True
     parent = curr_node
     children = curr_node.children
@@ -81,6 +99,9 @@ def prune(curr_node, node_parent, data, classes):
     return curr_node
 
 def get_node_examples(node, examples):
+    """
+    returns a sub set of examples. The examples that are coupled to the given node.
+    """
     sub_examples_list = list()
     for branch in node.child_examples:
         for x in branch:
@@ -96,6 +117,10 @@ def get_node_examples(node, examples):
 
 
 def no_info_gain(node, data, classes):
+    """
+    returns true if the attribute, given its data, contributes significantly to
+    discimination in the decision making process
+    """
     pk = list()
     nk = list()
     for k in range(0, len(node.child_examples)):
@@ -126,11 +151,19 @@ def no_info_gain(node, data, classes):
         nk_hat.insert(k, n*(pk[k]+nk[k])/(p+n))
         Delta += pow(pk[k] - pk_hat[k],2)/pk_hat[k] + pow(nk[k] - nk_hat[k],2)/nk_hat[k]
     v = len(pk) - 1 - v_minus
-    chi2 = CHI2_95[v + 1]
-    return Delta < chi2
+    #Select whether to use table values or calculate using CHI2_PARAM and scipy instead.
+    #chi2_tab = CHI2_95[v - 1]
+    #chi2_sci = chi2.ppf(CHI2_PARAM, v)
+    chi2_sci = chi2.ppf(P_VALUE, v)
+    #print("Delta value for node ", node.attribute, " is: ", Delta, ", chi2 value is: ", chi2_sci)
+    return Delta >= chi2_sci
 
 
 def plurality_value(examples):
+    """
+    Returns the most common class among the examples. Randomizes the return value
+    in case of ties.
+    """
     goals = column(examples, len(examples[0])-1)
     exsset = set(goals)
     A = [len([x for x in goals if x==y]) for y in exsset]
@@ -145,6 +178,9 @@ def plurality_value(examples):
     return maxGoals[r]
 
 def get_next_attribute(attributes, examples, classes):
+    """
+    Returns the remaining attribute which has the highest information gain.
+    """
     current_champion = 0
     while attributes[current_champion] == None:
         current_champion += 1
@@ -160,6 +196,10 @@ def get_next_attribute(attributes, examples, classes):
     return attributes[current_champion]
 
 def gain(i, examples, classes):
+    """
+    calculates the information gain of a set of examples, using entropy and
+    remainder
+    """
     nbrpos = len([x for x in examples if x[len(x)-1]==classes.index('yes')])
     q = nbrpos/len(examples)
     gain = B(q) - remainder(i, examples, classes)
@@ -167,11 +207,18 @@ def gain(i, examples, classes):
     return gain
 
 def B(q):
+    """
+    Returns the entropy of q
+    """
     if (q == 0 or q == 1):
         return -math.log(1,2)
     return -(q*math.log(q,2) + (1 - q)*math.log((1-q),2))
 
 def remainder(i, examples, classes):
+    """
+    Returns the remainder of attribute at index i in 'attributes' given
+    examples.
+    """
     col = column(examples, i+1)
     exsset = set(col)
     branches = [[row for row in examples if row[i+1]==val] for val in exsset]
@@ -183,6 +230,9 @@ def remainder(i, examples, classes):
 
 
 def check_if_all_same(examples):
+    """
+    returns true if all examples have the same class
+    """
     goals = column(examples, len(examples[0])-1)
     exsset = set(goals)
     return False if len(exsset) > 1 else True
