@@ -3,9 +3,9 @@ import math
 from random import randint
 from TreeNode import TreeNode
 from scipy.stats import chi2
+import sys
 
 P_VALUE = 0.05
-CHI2_PARAM = 1 - P_VALUE
 
 CHI2_95 =   [3.84145882069413, 5.99146454710798,    7.81472790325118,
             9.48772903678115,	11.0704976935164,	12.5915872437440,
@@ -20,10 +20,11 @@ CHI2_95 =   [3.84145882069413, 5.99146454710798,    7.81472790325118,
 
 
 def main():
-    attributes, classes, data, att_dict = Reader.read_file("Restaurant2")
     """Main method of Decision Tree Project.
     Calls the operational functions to create a Decision Tree and a pruned tree
     """
+
+    attributes, classes, data, att_dict = Reader.read_file(sys.argv[1])
 
     print("The attributes are:")
     print (attributes)
@@ -32,11 +33,12 @@ def main():
     print("The example data used is: ")
     for line in data:
         print (line)
-
+    print()
 
     root = DTL(data, attributes, data, data, att_dict, classes)
     print("decision tree: ")
     root.print_tree()
+    print("")
     print("pruned tree: ")
     prune(root, root, data, classes)
     root.print_tree()
@@ -80,6 +82,8 @@ def prune(curr_node, node_parent, data, classes):
     The method is then called recursively on any child nodes until leaves are found.
     Leaves are pruned if not found useful enough.
     """
+    root = (curr_node == node_parent)
+
     leaf = True
     parent = curr_node
     children = curr_node.children
@@ -91,10 +95,13 @@ def prune(curr_node, node_parent, data, classes):
             leaf = False
             break
     if leaf:
-        if no_info_gain(curr_node, data, classes):
-            ind = node_parent.children.index(curr_node)
-            node_parent.children.remove(curr_node)
-            node_parent.children.insert(ind, plurality_value(get_node_examples(curr_node,data)))
+        if no_info_gain(curr_node, data, classes) :
+            if not root:
+                ind = node_parent.children.index(curr_node)
+                node_parent.children.remove(curr_node)
+                node_parent.children.insert(ind, plurality_value(get_node_examples(curr_node,data)))
+            else:
+                print("Attemped to prune root of tree")
 
     return curr_node
 
@@ -130,7 +137,7 @@ def no_info_gain(node, data, classes):
             for row in data:
                 if row[0] == x:
                     curr_class = row[len(row)-1]
-                    if curr_class == classes.index('yes'):
+                    if curr_class == 0:
                         pk[k] += 1
                     else:
                         nk[k] += 1
@@ -200,10 +207,10 @@ def gain(i, examples, classes):
     calculates the information gain of a set of examples, using entropy and
     remainder
     """
-    nbrpos = len([x for x in examples if x[len(x)-1]==classes.index('yes')])
+    nbrpos = len([x for x in examples if x[len(x)-1]==0])
     q = nbrpos/len(examples)
     gain = B(q) - remainder(i, examples, classes)
-    print(i,gain)
+    # print(i,gain)
     return gain
 
 def B(q):
@@ -224,7 +231,7 @@ def remainder(i, examples, classes):
     branches = [[row for row in examples if row[i+1]==val] for val in exsset]
     rem_sum = 0
     for branch in branches:
-        nbrpos = len([x for x in branch if x[len(x)-1]==classes.index('yes')])
+        nbrpos = len([x for x in branch if x[len(x)-1]==0])
         rem_sum += len(branch)*B( nbrpos/len(branch) )
     return rem_sum/len(examples)
 

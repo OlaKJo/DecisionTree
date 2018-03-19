@@ -18,7 +18,7 @@ class TreeNode:
         printstr = ""
         for s in range(0,indent):
             printstr += "   "
-        print(printstr,self.attribute, " = ", self.att_dict.get(self.attribute)[i], self.child_examples[i])
+        print(printstr,self.attribute, " = ", self.att_dict.get(self.attribute)[i])#, self.child_examples[i])
 
     def print_tree(self, level = None):
         if level is None:
@@ -34,4 +34,4 @@ class TreeNode:
         printstr = ""
         for s in range(0,level):
             printstr += "   "
-        print(printstr,self.attribute, " = ", self.att_dict.get(self.attribute)[i], ": ", self.classes[val].upper(), self.child_examples[i])
+        print(printstr,self.attribute, " = ", self.att_dict.get(self.attribute)[i], ": ", self.classes[val].upper())#, self.child_examples[i])
